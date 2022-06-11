@@ -31,3 +31,25 @@ body {
   color: var(--color-white);
   line-height: 1.6;
 }
+
+input {
+  font-family: "Poppins", sans-serif;
+  color: var(--color-bg);
+  width: 30%;
+  vertical-align: middle;
+  margin: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-white);
+  border-radius: 20px;
+}
+
+button {
+  font-family: "Poppins", sans-serif;
+  padding: 0.5rem 2rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-white);
+  border-radius: 20px;
+  color: var(--color-white);
+  cursor: pointer;
+}
