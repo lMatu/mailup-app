@@ -1,11 +1,13 @@
 //Libraries
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from "react-router-dom";
 import { MdKeyboardArrowRight } from 'react-icons/md';
+import Swal from 'sweetalert2';
 
 //Other components
 import Device from '../Common/Device'
+import getAllUsers from '../../services/getAllUsers';
 
 //Img
 import logo from '../../assets/img/logo.svg'
@@ -66,7 +68,7 @@ const Items = styled(Link)`
   color: #FFFFFF;
   width: 30%;
   max-height: 5rem;
-  margin: 1.5rem;
+  margin: 1rem;
   border: 1px solid #efefef;
   padding: 1rem 0;
   border-radius: 8px;
@@ -85,6 +87,22 @@ const Items = styled(Link)`
     width: 100%;
   }
 `
+
+const ItemsNo = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex: 1;
+  color: #FFFFFF;
+  width: 30%;
+  max-height: 5rem;
+  margin: 1.5rem;
+  border: 1px solid #efefef;
+  padding: 1rem 0;
+  border-radius: 8px;
+  box-shadow: 0px 3px 4px rgba(240, 240, 240, 0.15);
+`
+
 const ItemsCol = styled.div`
   padding: 0.5rem;
   @media only screen and ${Device.xs} {
@@ -93,7 +111,8 @@ const ItemsCol = styled.div`
 `
 
 const ImgProfile = styled.img`
-  width: 5rem;
+  width: 3.5rem;
+  border-radius: 50%;
   height: auto;
 `
 
@@ -133,19 +152,122 @@ const Button = styled.button`
 `;
 
 function Users() {
+
+  const inputRef = useRef();
+
+  const [users, setUsers] = useState('');
+  const [first, setFirst] = useState('');
+
+  useEffect(() => {
+
+    Swal.fire({
+      title: "Por favor, aguarde...",
+      onAfterClose() {
+        Swal.hideLoading();
+      },
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      showCancelButton: false,
+    });
+    Swal.showLoading();
+
+    allUsers()
+  }, [])
+
+  const allUsers = async () => {
+    Swal.close();
+    let response = await getAllUsers("/user");
+    if (response.flag) {
+      setUsers(response.result.data);
+      setFirst(response.result.data)
+    } else {
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo obtener los usuarios",
+        icon: "error",
+        confirmButtonColor: "#3085d6",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      })
+    }
+  }
+
+  function handleClick() {
+    const filter = inputRef.current.value;
+    const userSearch = users.filter(opt => {
+
+      if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.id).includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.firstName + ' ' + opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+
+    setUsers(userSearch)
+
+  }
+
+  function handleClick() {
+    const filter = inputRef.current.value;
+    const userSearch = users.filter(opt => {
+
+      if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.id).includes(filter.toUpperCase())) {
+        return true;
+      } else if ((opt.firstName + ' ' + opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+
+    setUsers(userSearch)
+  }
+
+  function handleRefresh() {
+    setUsers(first)
+
+  }
+
   return (
     <Container>
       <Logo src={logo} alt="logo" />
       <Box>
         <Group>
-          <Input></Input><Button type="button">Buscar</Button>
+          <Input ref={inputRef} type="text" placeholder="...." name="search">
+          </Input>
+          <Button type="button" onClick={handleClick}>
+            Buscar
+          </Button>
+          <Button type="button" onClick={handleRefresh}>
+            Refrescar
+          </Button>
         </Group>
         <Content>
-          <Items to={`/profile/1`} key={1}>
-            <ItemsCol><ImgProfile src={logo}></ImgProfile></ItemsCol>
-            <ItemsCol>Matias Pereira</ItemsCol>
-            <ItemsCol><ArrowRight /></ItemsCol>
-          </Items>
+          {users.length > 0 ? users.map((opt, index) => {
+            return (
+              <Items to={`/profile/${opt.id}`} key={opt.id}>
+                <ItemsCol><ImgProfile src={opt.picture}></ImgProfile></ItemsCol>
+                <ItemsCol>{opt.firstName} {opt.lastName}</ItemsCol>
+                <ItemsCol><ArrowRight /></ItemsCol>
+              </Items>
+            )
+          }) :
+            <ItemsNo>
+              <ItemsCol>Usuarios no encontrados</ItemsCol>
+            </ItemsNo>
+          }
         </Content>
       </Box>
     </Container>
