@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="users" replace />} />
         <Route path="/users" element={<User />} />
-        <Route path="/users/profile" element={<Profile />} />
+        <Route path="/users/profile/:id" element={<Profile />} />
       </Routes>
     </div>
   );

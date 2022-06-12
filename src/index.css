@@ -52,4 +52,5 @@ button {
   border-radius: 20px;
   color: var(--color-white);
   cursor: pointer;
+  margin: 0.5rem 1rem;
 }

@@ -147,6 +147,7 @@ const Button = styled.button`
     border-color: #FFFFFF;
   }
   @media only screen and ${Device.xs} {
+    margin: 0.5rem 0;
     width: 100%;
   }
 `;
@@ -162,9 +163,6 @@ function Users() {
 
     Swal.fire({
       title: "Por favor, aguarde...",
-      onAfterClose() {
-        Swal.hideLoading();
-      },
       allowOutsideClick: false,
       allowEscapeKey: false,
       allowEnterKey: false,
@@ -177,8 +175,8 @@ function Users() {
   }, [])
 
   const allUsers = async () => {
-    Swal.close();
     let response = await getAllUsers("/user");
+    Swal.close();
     if (response.flag) {
       setUsers(response.result.data);
       setFirst(response.result.data)
@@ -196,48 +194,39 @@ function Users() {
 
   function handleClick() {
     const filter = inputRef.current.value;
-    const userSearch = users.filter(opt => {
+    if (filter && filter.trim() !== "") {
+      const userSearch = users.filter(opt => {
 
-      if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.id).includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.firstName + ' ' + opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else {
-        return false;
-      }
-    })
+        if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
+          return true;
+        } else if ((opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+          return true;
+        } else if ((opt.id).toUpperCase().includes(filter.toUpperCase())) {
+          return true;
+        } else if ((opt.firstName + ' ' + opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
+          return true;
+        } else {
+          return false;
+        }
+      })
 
-    setUsers(userSearch)
-
-  }
-
-  function handleClick() {
-    const filter = inputRef.current.value;
-    const userSearch = users.filter(opt => {
-
-      if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.id).includes(filter.toUpperCase())) {
-        return true;
-      } else if ((opt.firstName + ' ' + opt.lastName).toUpperCase().includes(filter.toUpperCase())) {
-        return true;
-      } else {
-        return false;
-      }
-    })
-
-    setUsers(userSearch)
+      setUsers(userSearch)
+    } else {
+      Swal.fire({
+        title: "Atención",
+        text: "Debe ingresar un valor de búsqueda",
+        icon: "info",
+        confirmButtonColor: "#054d6e",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        width: 400,
+      })
+    }
   }
 
   function handleRefresh() {
+    inputRef.current.value = ''
     setUsers(first)
-
   }
 
   return (
@@ -245,7 +234,7 @@ function Users() {
       <Logo src={logo} alt="logo" />
       <Box>
         <Group>
-          <Input ref={inputRef} type="text" placeholder="...." name="search">
+          <Input ref={inputRef} type="text" placeholder="ingrese nombre o id" name="search">
           </Input>
           <Button type="button" onClick={handleClick}>
             Buscar
@@ -257,7 +246,7 @@ function Users() {
         <Content>
           {users.length > 0 ? users.map((opt, index) => {
             return (
-              <Items to={`/profile/${opt.id}`} key={opt.id}>
+              <Items to={`/users/profile/${opt.id}`} key={opt.id}>
                 <ItemsCol><ImgProfile src={opt.picture}></ImgProfile></ItemsCol>
                 <ItemsCol>{opt.firstName} {opt.lastName}</ItemsCol>
                 <ItemsCol><ArrowRight /></ItemsCol>
