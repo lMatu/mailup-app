@@ -1,18 +1,18 @@
 const axios = require("axios")
 
-const gettAllUsers = async (uri, page = "", limit = "") => {
+const getUserByPage = async (uri, currentPage, limit) => {
 
     let status = null;
     let data = null;
     let dataFetched = null;
 
-   await axios
+    await axios
         .get(`https://dummyapi.io/data/v1${uri}`, {
             headers: {
                 "app-id": "62a131828f0d1dccf73b78d7"
             },
             params:{
-                "page": page,
+                "page": currentPage,
                 "limit": limit
             }
         })
@@ -35,7 +35,7 @@ const gettAllUsers = async (uri, page = "", limit = "") => {
             dataFetched = {
                 code: status,
                 flag: true,
-                result: data
+                result: data,
             }
             break
         default:
@@ -49,4 +49,4 @@ const gettAllUsers = async (uri, page = "", limit = "") => {
     return dataFetched
 }
 
-export default gettAllUsers
+export default getUserByPage

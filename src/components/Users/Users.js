@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { Link } from "react-router-dom";
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import Swal from 'sweetalert2';
+import ReactPaginate from 'react-paginate';
 
 //Other components
 import Device from '../Common/Device'
@@ -11,6 +12,7 @@ import getAllUsers from '../../services/getAllUsers';
 
 //Img
 import logo from '../../assets/img/logo.svg'
+import getUserByPage from '../../services/getUserByPage';
 
 //Custom Styled Components
 const Logo = styled.img`
@@ -151,6 +153,60 @@ const Button = styled.button`
     width: 100%;
   }
 `;
+const MyPaginate = styled(ReactPaginate).attrs({
+  activeClassName: 'active',
+})`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  width: 100%;
+  margin: 1rem;
+  li a {
+    border-radius: 7px;
+    padding: 0.1rem 1rem;
+    border: gray 1px solid;
+    cursor: pointer;
+  }
+  li.previous a,
+  li.next a,
+  li.break a {
+    color: #2BA6CB;
+    border-color: transparent;
+  }
+  li.active a {
+    background-color: #2BA6CB;
+    border-color: transparent;
+    color: white;
+    min-width: 32px;
+  }  
+  li.active a:hover {
+    background: linear-gradient(180deg,#2ba6cb 0%,#1988a9 100%);
+    border-color: transparent;
+    color: white;
+  }
+  li.disabled a {
+    color: grey;
+  }
+  li.disable,
+  li.disabled a {
+    cursor: default;
+  }
+`;
+
+const Footer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  margin: 1rem;
+  padding-left: 4rem;
+  @media only screen and ${Device.xs} {
+    padding-left: 0;
+  }
+`
 
 function Users() {
 
@@ -158,6 +214,10 @@ function Users() {
 
   const [users, setUsers] = useState('');
   const [first, setFirst] = useState('');
+  const [totUsers, setTotUsers] = useState('');
+  const [pageCount, setpageCount] = useState(0);
+
+  const limit = 12;
 
   useEffect(() => {
 
@@ -172,14 +232,18 @@ function Users() {
     Swal.showLoading();
 
     allUsers()
+    totalUsers()
   }, [])
 
+  //Servicio con axios
   const allUsers = async () => {
-    let response = await getAllUsers("/user");
+    let response = await getAllUsers(`/user`, 1, limit);
     Swal.close();
     if (response.flag) {
-      setUsers(response.result.data);
+      setUsers(response.result.data)
       setFirst(response.result.data)
+      const total = response.result.total
+      setpageCount((Math.ceil(total / limit)) - 1)
     } else {
       Swal.fire({
         title: "Error",
@@ -192,10 +256,30 @@ function Users() {
     }
   }
 
+  //Traigo todos los usuarios para realizar la busqueda
+  //Si tuviera una búsqueda por nombre en la API, se podría hacer en el servicio
+  const totalUsers = async () => {
+    let response = await getAllUsers(`/user`);
+    Swal.close();
+    if (response.flag) {
+      setTotUsers(response.result.data)
+    }
+  }
+
+  //Actualizo la página con los usuarios que vienen en la página seleccionada de la API
+  const getUsers = async (currentPage) => {
+    let response = await getUserByPage(`/user`, currentPage, limit);
+    Swal.close();
+    if (response.flag) {
+      setUsers(response.result.data)
+      setFirst(response.result.data)
+    }
+  }
+
   function handleClick() {
     const filter = inputRef.current.value;
     if (filter && filter.trim() !== "") {
-      const userSearch = users.filter(opt => {
+      const userSearch = totUsers.filter(opt => {
 
         if ((opt.firstName).toUpperCase().includes(filter.toUpperCase())) {
           return true;
@@ -229,12 +313,36 @@ function Users() {
     setUsers(first)
   }
 
+  function handleBlur() {
+    if(inputRef.current.value === '') {
+      setUsers(first)
+    }
+  }
+
+  const handlePageClick = async (data) => {
+
+    Swal.fire({
+      title: "Por favor, aguarde...",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      showCancelButton: false,
+    });
+    Swal.showLoading();
+
+    let currentPage = data.selected + 1;
+
+    await getUsers(currentPage);
+
+  };
+
   return (
     <Container>
       <Logo src={logo} alt="logo" />
       <Box>
         <Group>
-          <Input ref={inputRef} type="text" placeholder="ingrese nombre o id" name="search">
+          <Input ref={inputRef} type="text" placeholder="ingrese nombre o id" name="search" onBlur={handleBlur}>
           </Input>
           <Button type="button" onClick={handleClick}>
             Buscar
@@ -259,6 +367,28 @@ function Users() {
           }
         </Content>
       </Box>
+      <Footer>
+        <MyPaginate
+          previousLabel={"previous"}
+          nextLabel={"next"}
+          breakLabel={"..."}
+          pageCount={pageCount}
+          marginPagesDisplayed={1}
+          pageRangeDisplayed={1}
+          onPageChange={handlePageClick}
+          containerClassName={"pagination justify-content-center"}
+          pageClassName={"page-item"}
+          pageLinkClassName={"page-link"}
+          previousClassName={"page-item"}
+          previousLinkClassName={"page-link"}
+          nextClassName={"page-item"}
+          nextLinkClassName={"page-link"}
+          breakClassName={"page-item"}
+          breakLinkClassName={"page-link"}
+          disabledClassName={"disabled"}
+          activeClassName={"active"}
+        />
+      </Footer>
     </Container>
   )
 }

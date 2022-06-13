@@ -24,9 +24,6 @@ const getDataUser = async (uri) => {
                 data = error.response.data
             }
         })
-        console.log("data")
-        console.log(data)
-        console.log(status)
 
     switch (status) {
         case 200:

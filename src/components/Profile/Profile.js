@@ -160,9 +160,6 @@ function Profile() {
   let params = useParams();
   //navigate("/users/profile", { replace: true })
 
-  console.log("params")
-  console.log(params.id)
-
   const [user, setUser] = useState('');
   const [location, setLocation] = useState('');
 
@@ -202,10 +199,6 @@ function Profile() {
   function handleClick() {
     navigate("/users")
   }
-
-  console.log("user")
-  console.log(user)
-  console.log(location)
 
   return (
     <Container>
